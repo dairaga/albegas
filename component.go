@@ -5,7 +5,9 @@ package albegas
 
 type Component interface {
 	Element
+
 	Append(string, Component)
+
 	On(string, string, func(Context), ...interface{})
 	Off(string, string)
 	Watch(string, interface{})

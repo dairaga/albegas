@@ -80,8 +80,7 @@ func Set(name string, value interface{}) {
 // -----------------------------------------------------------------------------
 
 func Append(name string, value interface{}) {
-	_app.models.Append(name, value)
-	_app.trigger(name, value)
+	_app.trigger(name, _app.models.Append(name, value))
 }
 
 // -----------------------------------------------------------------------------
@@ -120,7 +119,6 @@ func MapIndex(name string, key interface{}) (interface{}, bool) {
 
 func Run() {
 	<-_app.ch
-
 	for _, com := range _app.components {
 		com.Depose()
 	}

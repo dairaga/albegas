@@ -13,7 +13,8 @@ import (
 )
 
 type component struct {
-	tatto string
+	parent *component
+	tatto  string
 	albegas.Element
 	callbacks map[string]js.Func
 }
@@ -111,29 +112,7 @@ func (c *component) Depose() {
 
 // -----------------------------------------------------------------------------
 
-func createComponentByJSValue(value js.Value) albegas.Component {
-	return CreateComponentByElement(element.Of(value))
-}
-
-// -----------------------------------------------------------------------------
-
-func createComponetByTemplate(value js.Value) albegas.Component {
-	tmpl := element.Of(value)
-
-	if !tmpl.Truthy() {
-		panic(fmt.Sprintf("template is not valid"))
-	}
-
-	content := tmpl.Prop("content")
-
-	return createComponentByJSValue(
-		content.Call("cloneNode", true).Get("firstElementChild"),
-	)
-}
-
-// -----------------------------------------------------------------------------
-
-func CreateComponentByElement(elm albegas.Element) albegas.Component {
+func createComponentByElement(elm albegas.Element) *component {
 	tatto := tatto(10)
 	elm.SetAttr("data-albegas", tatto)
 	ret := &component{
@@ -144,6 +123,27 @@ func CreateComponentByElement(elm albegas.Element) albegas.Component {
 
 	_app.append(tatto, ret)
 	return ret
+}
+
+// -----------------------------------------------------------------------------
+
+func createComponentByJSValue(value js.Value) *component {
+	return createComponentByElement(element.Of(value))
+}
+
+// -----------------------------------------------------------------------------
+
+func createComponetByTemplate(value js.Value) *component {
+
+	if !value.Truthy() {
+		panic(fmt.Sprintf("template is not valid"))
+	}
+
+	content := value.Get("content")
+
+	return createComponentByJSValue(
+		content.Call("cloneNode", true).Get("firstElementChild"),
+	)
 }
 
 // -----------------------------------------------------------------------------
@@ -163,5 +163,5 @@ func CreateComponentByHTML(content albegas.HTML) albegas.Component {
 // -----------------------------------------------------------------------------
 
 func CreateComponentById(id string) albegas.Component {
-	return CreateComponentByElement(element.Of(global.Query(id)))
+	return createComponentByElement(element.Of(global.Query(id)))
 }

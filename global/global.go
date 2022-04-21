@@ -14,6 +14,24 @@ var _body = _document.Get("body")
 
 // -----------------------------------------------------------------------------
 
+func Window() js.Value {
+	return _window
+}
+
+// -----------------------------------------------------------------------------
+
+func Document() js.Value {
+	return _document
+}
+
+// -----------------------------------------------------------------------------
+
+func Body() js.Value {
+	return _body
+}
+
+// -----------------------------------------------------------------------------
+
 // CreateElement returns a HTML element.
 func CreateElement(tag string) js.Value {
 	return _document.Call("createElement", tag)
@@ -42,4 +60,10 @@ func Query(selector string) js.Value {
 
 func QueryAll(selector string) js.Value {
 	return _document.Call("querySelectorAll", selector)
+}
+
+// -----------------------------------------------------------------------------
+
+func Alert(msg string) {
+	_window.Call("alert", msg)
 }

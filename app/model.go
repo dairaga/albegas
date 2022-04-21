@@ -49,19 +49,12 @@ func (m models) MapIndex(name string, key interface{}) (interface{}, bool) {
 // -----------------------------------------------------------------------------
 
 func (m models) Set(name string, val interface{}) {
-	x, ok := m[name]
-	if ok {
-		x.Set(reflect.ValueOf(val))
-	} else {
-		x = reflect.ValueOf(val)
-	}
-
-	m[name] = x
+	m[name] = reflect.ValueOf(val)
 }
 
 // -----------------------------------------------------------------------------
 
-func (m models) Append(name string, val1 interface{}, vals ...interface{}) {
+func (m models) Append(name string, val1 interface{}, vals ...interface{}) interface{} {
 	args := make([]reflect.Value, 1+len(vals))
 	args[0] = reflect.ValueOf(val1)
 
@@ -77,6 +70,7 @@ func (m models) Append(name string, val1 interface{}, vals ...interface{}) {
 	x = reflect.Append(x, args...)
 
 	m[name] = x
+	return x.Interface()
 }
 
 // -----------------------------------------------------------------------------
