@@ -5,7 +5,6 @@ package app
 
 import (
 	"fmt"
-	"reflect"
 	"syscall/js"
 
 	"github.com/dairaga/albegas"
@@ -30,6 +29,14 @@ func (c *component) target(elm string) albegas.Element {
 
 // -----------------------------------------------------------------------------
 
+func (c *component) on(elm, typ string, listener js.Func) {
+	target := c.target(elm)
+	target.AddEventListener(typ, listener)
+	c.callbacks[typKey(elm, typ)] = listener
+}
+
+// -----------------------------------------------------------------------------
+
 func (c *component) Append(elm string, cmp albegas.Component) {
 	c.target(elm).Ref().Call("append", cmp.Ref())
 }
@@ -37,34 +44,19 @@ func (c *component) Append(elm string, cmp albegas.Component) {
 // -----------------------------------------------------------------------------
 
 func (c *component) Watch(model string, fn interface{}) {
-	coms := _app.m2v[model]
-	if coms == nil {
-		coms = make(map[string]bool)
-		coms[c.tatto] = true
-		_app.m2v[model] = coms
-	}
-
-	_app.mvvm[typKey(model, c.tatto)] = reflect.ValueOf(fn)
+	_app.mvvm.Watch(model, c.tatto, fn)
 }
 
 // -----------------------------------------------------------------------------
 
 func (c *component) WatchIndex(name string, idx int, fn interface{}) {
-	c.Watch(fmt.Sprintf("%s[%d]", name, idx), fn)
+	_app.mvvm.WatchIndex(name, idx, c.tatto, fn)
 }
 
 // -----------------------------------------------------------------------------
 
 func (c *component) WatchMapIndex(name string, key interface{}, fn interface{}) {
-	c.Watch(fmt.Sprintf("%s[%v]", name, key), fn)
-}
-
-// -----------------------------------------------------------------------------
-
-func (c *component) on(elm, typ string, listener js.Func) {
-	target := c.target(elm)
-	target.AddEventListener(typ, listener)
-	c.callbacks[typKey(elm, typ)] = listener
+	_app.mvvm.WatchMapIndex(name, key, c.tatto, fn)
 }
 
 // -----------------------------------------------------------------------------
@@ -119,21 +111,6 @@ func (c *component) Depose() {
 
 // -----------------------------------------------------------------------------
 
-func CreateComponentByElement(elm albegas.Element) albegas.Component {
-	tatto := tatto(10)
-	elm.SetAttr("data-albegas", tatto)
-	ret := &component{
-		tatto:     tatto,
-		Element:   elm,
-		callbacks: make(map[string]js.Func),
-	}
-
-	_app.append(tatto, ret)
-	return ret
-}
-
-// -----------------------------------------------------------------------------
-
 func createComponentByJSValue(value js.Value) albegas.Component {
 	return CreateComponentByElement(element.Of(value))
 }
@@ -152,6 +129,21 @@ func createComponetByTemplate(value js.Value) albegas.Component {
 	return createComponentByJSValue(
 		content.Call("cloneNode", true).Get("firstElementChild"),
 	)
+}
+
+// -----------------------------------------------------------------------------
+
+func CreateComponentByElement(elm albegas.Element) albegas.Component {
+	tatto := tatto(10)
+	elm.SetAttr("data-albegas", tatto)
+	ret := &component{
+		tatto:     tatto,
+		Element:   elm,
+		callbacks: make(map[string]js.Func),
+	}
+
+	_app.append(tatto, ret)
+	return ret
 }
 
 // -----------------------------------------------------------------------------
